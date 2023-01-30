@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <!-- アニメーション 不要かも-->
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+    <!-- カラーテーマ 不要かも-->
+    <script src="https://www.amcharts.com/lib/4/themes/material.js"></script>
+    <title>JS課題_学習時間のグラフ化</title>
+    <style>
+        body {
+            width: 1200px;
+        }
+        main {
+            width: 90%;
+            margin: 0 auto;
+        }
+        #chart1 {
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+            border: 2px;
+            border-color: darkgray;
+        }
+        .input-contents {
+            width: 95%;
+            margin: 0 auto;
+            display: flex;
+        }
+        .input-t , .input-d {
+            margin: 10px;
+            display: flex;
+        }
+        .submit {
+            width: 95%;
+            margin: 0 auto;
+        }
+        .output-contents {
+            width: 95%;
+            margin: 0 auto;
+            border: 2px;
+        }
+        .th {
+            width: 40px;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>JS課題　学習時間のグラフ化</h1>
+        <div>
+            <div>
+                <!--チャート-->
+                <div id="chart1"></div>
+            </div>
+            <div>
+                <!--登録-->
+                <div class="input-contents">
+                    <!--入力-->
+                    <div class="input-d">
+                        <p>日</p>
+                        <input type="text" id="input-d">
+                    </div>
+                    <div class="input-t">
+                        <p>時間</p>
+                        <input type="text" id="input-t">
+                    </div>
+                </div>
+                <div class="submit">
+                    <!--サブミット-->
+                    <button id="create">時間を登録</button>
+                    <button>グラフに表示</button>
+                </div>
+                <div class="output-contents">
+                    <!--表示-->
+                    <table border="1">
+                        <tr>
+                            <th>日</th>
+                            <th>時間</th>
+                        </tr>
+                        <tr id="out-tr">
+                            <th id="output-d"></th>
+                            <th id="output-t"></th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        //「時間を登録」ボタンクリック
+        //「日」「時間」のテキストフォームから入力値を取得 → テーブルに出力
+        let list1;
+        let list2;
+        document.getElementById('create').addEventListener('click', function(){
+            //入力フォームの入力値を取得してローカルストレージに保存
+            let inputDay = document.getElementById('input-d').value;
+            let inputTime = document.getElementById('input-t').value;
+
+            //配列に入れる？
+            let datalist = {
+                dataDay: inputDay,
+                dataTime: inputTime
+            }
+
+            //配列のデータをJSON形式に変換してローカルストレージに保存
+            let json = JSON.stringify(datalist);
+            localStorage.setItem('setdata',json);
+            
+            //ローカルストレージに入れた値を取得 → JS形式のオブジェクトに戻す
+            let getlist = localStorage.getItem('setdata');
+            let list = JSON.parse(getlist);
+            
+            list1 = list['dataDay'];
+            list2 = list['dataTime'];
+        
+            //ローカルストレージに保存したデータをフォームに出力する
+            document.getElementById('output-d').textContent = list1
+            document.getElementById('output-t').textContent = list2;
+            console.log(list1);
+            
+        });
+
+
+        //該当のデータのみを削除↓
+        //localStorage.removeItem('削除したいkey名');
+        //保存されている全データを削除
+        //localStorage.clear();
+
+
+
+        //「グラフに表示」ボタンクリック
+        //ローカルストレージに保存した「日」「時間」のデータをグラフに表示（保存？）
+    
+        const chart = am4core.create('chart1', am4charts.XYChart)
+
+        //データ設定　別ファイルに移すかも
+        chart.data = [
+        {
+            date: list1,
+            count: list2
+        },
+        {
+            date: '2023/2/1',
+            count: 12
+        },
+        ]
+
+        //X軸
+        const cateAxis = chart.xAxes.push(new am4charts.CategoryAxis())
+        cateAxis.dataFields.category = 'date'
+
+        //Y軸
+        const valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
+
+        // 5. データの紐付け
+        const series = chart.series.push(new am4charts.ColumnSeries())
+        series.dataFields.valueY = 'count'
+        series.dataFields.categoryX = 'date'
+        
+
+    </script>
+
+</body>
+</html>
