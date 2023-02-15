@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://www.amcharts.com/lib/4/core.js"></script>
-    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
-    <!-- アニメーション 不要かも-->
-    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
-    <!-- カラーテーマ 不要かも-->
-    <script src="https://www.amcharts.com/lib/4/themes/material.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.1.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
     <title>JS課題_学習時間のグラフ化</title>
     <style>
         body {
@@ -42,21 +39,38 @@
         .output-contents {
             width: 95%;
             margin: 0 auto;
-            border: 2px;
         }
-        .th {
-            width: 40px;
+        .outTitle {
+            width: 300px;
+            height: 50px;
+
+            display: flex;
+        }
+        .ttl {
+            width: 100px;
             height: 30px;
+            margin: auto;
         }
+        .addArea {
+            width: 300px;
+            height: 30px;
+            display: flex;
+        }
+        .add{
+            width: 150px;
+            height: 30px;
+            margin: 0 auto;
+        }
+        
     </style>
 </head>
 <body>
     <main>
-        <h1>JS課題　学習時間のグラフ化</h1>
+        <h1>JS課題 学習時間のグラフ化</h1>
         <div>
             <div>
                 <!--チャート-->
-                <div id="chart1"></div>
+                <canvas id="chart1"></canvas>
             </div>
             <div>
                 <!--登録-->
@@ -64,7 +78,7 @@
                     <!--入力-->
                     <div class="input-d">
                         <p>日</p>
-                        <input type="text" id="input-d">
+                        <input type="date" id="input-d">
                     </div>
                     <div class="input-t">
                         <p>時間</p>
@@ -74,96 +88,104 @@
                 <div class="submit">
                     <!--サブミット-->
                     <button id="create">時間を登録</button>
-                    <button>グラフに表示</button>
+                    <button id="out">グラフに表示</button>
                 </div>
-                <div class="output-contents">
+
+                <div class="outTitle">
+                    <div class="ttl">学習日</div>
+                    <div class="ttl">学習した時間</div>
+                </div>
+
+                <div class="addArea">
                     <!--表示-->
-                    <table border="1">
-                        <tr>
-                            <th>日</th>
-                            <th>時間</th>
-                        </tr>
-                        <tr id="out-tr">
-                            <th id="output-d"></th>
-                            <th id="output-t"></th>
-                        </tr>
-                    </table>
+                    <div id="add-d" class="add"></div>
+                    <div id="add-t" class="add">
+
+                    </div>
                 </div>
             </div>
         </div>
     </main>
     
+    
     <script>
-        //「時間を登録」ボタンクリック
-        //「日」「時間」のテキストフォームから入力値を取得 → テーブルに出力
-        let list1;
-        let list2;
+
+        //①で取得した値を配列に入れてローカルストレージへ保存する関数
+        let arrayDay = [];
+        let arrayHour = [];
+        function createArray(outDay,outTime) {
+            //配列に入れる
+            arrayDay.push(outDay);
+            arrayHour.push(outTime);
+            //ローカルストレージに保存
+            localStorage.setItem('day',JSON.stringify(arrayDay));
+            localStorage.setItem('hour',JSON.stringify(arrayHour));
+        };
+
+        //①で取得した値を表示エリアへの出力する関数
+        function addText(outDay,outTime) {   
+            //出力用の要素を作成 →　取得した値（日付、時間）を入れる
+            const newDayContent = document.createElement('tr').textContent = outDay;
+            const newTimeContent = document.createElement('tr');
+            newTimeContent.textContent = outTime;
+
+            //作成した要素を表示エリアに表示させる
+            document.getElementById('add-d').append(newDayContent);         
+            const outContentT = document.getElementById('add-t').append(newTimeContent);
+        };
+
+        //グラフ表示する関数（②のボタンクリック時、ページ読み込み時に実行）
+        function makeChart(){
+            //ローカルストレージからデータ取得
+            let day = localStorage.getItem('day');
+            let hour = localStorage.getItem('hour');
+            day = JSON.parse(day);
+            hour = JSON.parse(hour);
+            
+            //チャートの生成
+            const ctx = document.getElementById('chart1').getContext('2d');
+            window.charts = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: day,
+                    datasets: [{
+                        data: hour
+                    }]
+                }
+            })
+        };
+
+        //①時間を登録ボタンクリック
         document.getElementById('create').addEventListener('click', function(){
-            //入力フォームの入力値を取得してローカルストレージに保存
-            let inputDay = document.getElementById('input-d').value;
+            //入力フォームから値を取得
+            let inputDay = document.getElementById('input-d').valueAsDate;
+            inputDay = inputDay.toLocaleString('ja-jp',{
+                dateStyle: 'long'
+            });
+            
             let inputTime = document.getElementById('input-t').value;
+            
+            //表示エリアへの出力の関数を実行
+            addText(inputDay,inputTime);
 
-            //配列に入れる？
-            let datalist = {
-                dataDay: inputDay,
-                dataTime: inputTime
-            }
+            //取得した値を配列に入れてlocalStorageに保存する関数を実行
+            createArray(inputDay,inputTime);
 
-            //配列のデータをJSON形式に変換してローカルストレージに保存
-            let json = JSON.stringify(datalist);
-            localStorage.setItem('setdata',json);
-            
-            //ローカルストレージに入れた値を取得 → JS形式のオブジェクトに戻す
-            let getlist = localStorage.getItem('setdata');
-            let list = JSON.parse(getlist);
-            
-            list1 = list['dataDay'];
-            list2 = list['dataTime'];
-        
-            //ローカルストレージに保存したデータをフォームに出力する
-            document.getElementById('output-d').textContent = list1
-            document.getElementById('output-t').textContent = list2;
-            console.log(list1);
-            
         });
 
+        //②「グラフに表示」ボタンクリック
+        document.getElementById('out').addEventListener('click', function(){
+            //チャートのインスタンスをリセット
+            if (typeof charts !== 'undefined' && charts) {
+                 charts.destroy();
+            }
 
-        //該当のデータのみを削除↓
-        //localStorage.removeItem('削除したいkey名');
-        //保存されている全データを削除
-        //localStorage.clear();
+            //グラフに表示する関数実行
+            makeChart();
+        })
 
-
-
-        //「グラフに表示」ボタンクリック
-        //ローカルストレージに保存した「日」「時間」のデータをグラフに表示（保存？）
-    
-        const chart = am4core.create('chart1', am4charts.XYChart)
-
-        //データ設定　別ファイルに移すかも
-        chart.data = [
-        {
-            date: list1,
-            count: list2
-        },
-        {
-            date: '2023/2/1',
-            count: 12
-        },
-        ]
-
-        //X軸
-        const cateAxis = chart.xAxes.push(new am4charts.CategoryAxis())
-        cateAxis.dataFields.category = 'date'
-
-        //Y軸
-        const valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
-
-        // 5. データの紐付け
-        const series = chart.series.push(new am4charts.ColumnSeries())
-        series.dataFields.valueY = 'count'
-        series.dataFields.categoryX = 'date'
-        
+        //ページ読み込み時にローカルストレージに保存されているデータのグラフを描画させる関数実行
+        makeChart();
 
     </script>
 
