@@ -100,9 +100,7 @@
                 <div class="addArea">
                     <!--表示-->
                     <div id="add-d" class="add"></div>
-                    <div id="add-t" class="add">
-
-                    </div>
+                    <div id="add-t" class="add"></div>
                 </div>
             </div>
         </div>
@@ -187,13 +185,19 @@
 
         //③「リセット」ボタンクリック
         document.getElementById('clear').addEventListener('click', function(){
-            //表示エリアの出力値をクリア
+            //入力エリアの入力値をクリア
             document.getElementById('input-d').value = '';
             document.getElementById('input-t').value = '';
+
+            //表示エリアの出力値をクリア
+            document.getElementById('add-d').remove();
+            document.getElementById('add-t').remove();
 
             //ローカルストレージをクリア
             localStorage.removeItem('day');
             localStorage.removeItem('hour');
+
+            window.location.reload();
         });
 
         //ページ読み込み時にローカルストレージに保存されているデータのグラフを描画させる関数実行
