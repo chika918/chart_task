@@ -89,6 +89,7 @@
                     <!--サブミット-->
                     <button id="create">時間を登録</button>
                     <button id="out">グラフに表示</button>
+                    <button id="clear">リセット</button>
                 </div>
 
                 <div class="outTitle">
@@ -120,7 +121,7 @@
             //ローカルストレージに保存
             localStorage.setItem('day',JSON.stringify(arrayDay));
             localStorage.setItem('hour',JSON.stringify(arrayHour));
-        };
+        }
 
         //①で取得した値を表示エリアへの出力する関数
         function addText(outDay,outTime) {   
@@ -132,7 +133,7 @@
             //作成した要素を表示エリアに表示させる
             document.getElementById('add-d').append(newDayContent);         
             const outContentT = document.getElementById('add-t').append(newTimeContent);
-        };
+        }
 
         //グラフ表示する関数（②のボタンクリック時、ページ読み込み時に実行）
         function makeChart(){
@@ -153,7 +154,7 @@
                     }]
                 }
             })
-        };
+        }
 
         //①時間を登録ボタンクリック
         document.getElementById('create').addEventListener('click', function(){
@@ -171,7 +172,7 @@
             //取得した値を配列に入れてlocalStorageに保存する関数を実行
             createArray(inputDay,inputTime);
 
-        });
+        })
 
         //②「グラフに表示」ボタンクリック
         document.getElementById('out').addEventListener('click', function(){
@@ -182,7 +183,18 @@
 
             //グラフに表示する関数実行
             makeChart();
-        })
+        });
+
+        //③「リセット」ボタンクリック
+        document.getElementById('clear').addEventListener('click', function(){
+            //表示エリアの出力値をクリア
+            document.getElementById('input-d').value = '';
+            document.getElementById('input-t').value = '';
+
+            //ローカルストレージをクリア
+            localStorage.removeItem('day');
+            localStorage.removeItem('hour');
+        });
 
         //ページ読み込み時にローカルストレージに保存されているデータのグラフを描画させる関数実行
         makeChart();
