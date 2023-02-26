@@ -105,24 +105,84 @@
             </div>
         </div>
     </main>
-    
-    
+       
     <script>
+        //ローカルストレージから取得して表示エリアへ出力する関数(①ボタンクリック時、ページ読み込み時)
+        let readList = function(){
+            //表示エリアをクリア
+            document.getElementById('add-d').innerHTML = '';
+            document.getElementById('add-t').innerHTML = '';
 
-        //①で取得した値を配列に入れてローカルストレージへ保存する関数
-        let arrayDay = [];
-        let arrayHour = [];
-        function createArray(outDay,outTime) {
-            //配列に入れる
-            arrayDay.push(outDay);
-            arrayHour.push(outTime);
-            //ローカルストレージに保存
-            localStorage.setItem('day',JSON.stringify(arrayDay));
-            localStorage.setItem('hour',JSON.stringify(arrayHour));
+            //ローカルストレージから値を取得する関数を実行
+            getStorageText();
+            if (get == null) return;
+
+            //表示エリアに出力
+            const newDayContent = document.createElement('tr').textContent = day;
+            document.getElementById('add-d').append(newDayContent);
+
+            const newHourContent = document.createElement('tr').textContent = hour;
+            document.getElementById('add-t').append(newHourContent);
+
         }
 
-        //①で取得した値を表示エリアへの出力する関数
-        function addText(outDay,outTime) {   
+        //配列をローカルストレージに保存する関数
+        function saveStorage(key,array){
+            localStorage.setItem('obj',JSON.stringify(array));
+        }
+
+        //①で取得した値を配列に入れる関数
+        let array = [];
+        let obj;
+
+        let createArray = function(outDay,outTime){
+            //オブジェクト
+            obj = {
+                day : outDay,
+                hour : outTime,
+            };
+            
+            //配列に入れる
+            array.push(obj);
+
+            //オブジェクトの日付(day)でソート
+            array = array.sort(function(a,b){
+                return (a.day < b.day) ? -1 : 1;
+            });
+            
+            //ローカルストレージに保存する関数を実行
+            saveStorage('key',array);
+        }
+
+        //一覧に日付と時間を出力するための関数
+        let get;
+        let day;
+        let hour;
+        let textArray = [];
+
+        let getStorageText = function(){
+
+            get = localStorage.getItem('obj');
+            get = JSON.parse(get);
+            if (get == null) return;
+
+            for (let i = 0; i < get.length; i++){
+                let aaa = get[i];
+                let day = aaa.day;
+                let hour = aaa.hour;
+                let obj = {
+                    day: day,
+                    hour: hour
+                };
+                textArray.push(obj);
+                
+                //出力関数を実行
+                addText(day,hour);
+            }
+        }
+
+        //ローカストレージから取得した値を表示エリアへの出力する関数
+            function addText(outDay,outTime) {   
             //出力用の要素を作成 →　取得した値（日付、時間）を入れる
             const newDayContent = document.createElement('tr').textContent = outDay;
             const newTimeContent = document.createElement('tr');
@@ -133,43 +193,61 @@
             const outContentT = document.getElementById('add-t').append(newTimeContent);
         }
 
-        //グラフ表示する関数（②のボタンクリック時、ページ読み込み時に実行）
-        function makeChart(){
-            //ローカルストレージからデータ取得
-            let day = localStorage.getItem('day');
-            let hour = localStorage.getItem('hour');
-            day = JSON.parse(day);
-            hour = JSON.parse(hour);
+        //②チャート作成用の関数
+        let arrayDay = [];
+        let arrayHour = [];
+        function getStorageChart(){
+            arrayDay = [];
+            arrayHour = [];
             
-            //チャートの生成
+            get = localStorage.getItem('obj');
+            get = JSON.parse(get);
+
+            if (get == null) return;
+            for (let i = 0; i < get.length; i++){
+                let a = get[i];
+                let day = a.day;
+                let hour = a.hour;
+                arrayDay.push(day);
+                arrayHour.push(hour);
+            }
+
+            //チャートを設定する関数を実行
+            createChart(arrayDay,arrayHour);
+        }       
+
+        //チャートの設定関数
+        function createChart(day,hour){
             const ctx = document.getElementById('chart1').getContext('2d');
-            window.charts = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: day,
-                    datasets: [{
-                        data: hour
+                window.charts = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: day,
+                        datasets: [{
+                            data: hour
                     }]
                 }
-            })
+            }) 
         }
+       
+        //------イベントハンドル-------//
 
         //①時間を登録ボタンクリック
         document.getElementById('create').addEventListener('click', function(){
-            //入力フォームから値を取得
+            
+            //入力フォームから値を取得   
             let inputDay = document.getElementById('input-d').valueAsDate;
             inputDay = inputDay.toLocaleString('ja-jp',{
                 dateStyle: 'long'
-            });
+            }); 
+            let inputTime = document.getElementById('input-t').value;           
             
-            let inputTime = document.getElementById('input-t').value;
-            
-            //表示エリアへの出力の関数を実行
-            addText(inputDay,inputTime);
-
-            //取得した値を配列に入れてlocalStorageに保存する関数を実行
+            //取得した値を配列に入れる関数を実行
             createArray(inputDay,inputTime);
 
+            //表示エリアへの出力の関数を実行
+            readList();
+            
         })
 
         //②「グラフに表示」ボタンクリック
@@ -179,8 +257,9 @@
                  charts.destroy();
             }
 
-            //グラフに表示する関数実行
-            makeChart();
+            //ローカルストレージから値を取得する関数を実行
+            getStorageChart()
+            
         });
 
         //③「リセット」ボタンクリック
@@ -194,14 +273,14 @@
             document.getElementById('add-t').remove();
 
             //ローカルストレージをクリア
-            localStorage.removeItem('day');
-            localStorage.removeItem('hour');
+            localStorage.removeItem('obj');
 
             window.location.reload();
         });
 
         //ページ読み込み時にローカルストレージに保存されているデータのグラフを描画させる関数実行
-        makeChart();
+        readList();
+        getStorageChart();
 
     </script>
 
