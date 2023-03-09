@@ -118,6 +118,8 @@
             if (get == null) return;
 
             //表示エリアに出力
+            if (day != null){};
+
             const newDayContent = document.createElement('tr').textContent = day;
             document.getElementById('add-d').append(newDayContent);
 
@@ -132,26 +134,46 @@
         }
 
         //①で取得した値を配列に入れる関数
-        let array = [];
-        let obj;
-
+        let arraySort = [];
         let createArray = function(outDay,outTime){
-            //オブジェクト
-            obj = {
+
+            //オブジェクト形式にする
+            let obj = {
                 day : outDay,
                 hour : outTime,
             };
-            
-            //配列に入れる
-            array.push(obj);
+            arraySort.push(obj);
 
             //オブジェクトの日付(day)でソート
-            array = array.sort(function(a,b){
+            arraySort = arraySort.sort(function(a,b){
                 return (a.day < b.day) ? -1 : 1;
             });
+
+            //日付を「年月日」形に変換
+            let arrayObj = [];
+            for (let i = 0; i < arraySort.length ; i++){
+                let idx = arraySort[i];
+                let day = idx.day;
+                let hour = idx.hour
+
+                //日付を変換
+                day = new Date(day).toLocaleString('ja-jp', {
+                    dateStyle: 'long'
+                })
+
+                //再度オブジェクト形式にする
+                let obj = {
+                    day: day,
+                    hour: hour
+                };
+
+                arrayObj.push(obj);
+
+            };
             
             //ローカルストレージに保存する関数を実行
-            saveStorage('key',array);
+            saveStorage('key',arrayObj);
+
         }
 
         //一覧に日付と時間を出力するための関数
@@ -164,18 +186,18 @@
 
             get = localStorage.getItem('obj');
             get = JSON.parse(get);
-            if (get == null) return;
 
+            if (get == null) return;
+           
             for (let i = 0; i < get.length; i++){
-                let aaa = get[i];
-                let day = aaa.day;
-                let hour = aaa.hour;
+                let idx = get[i];
+                let day = idx.day;
+                let hour = idx.hour;
                 let obj = {
                     day: day,
                     hour: hour
                 };
                 textArray.push(obj);
-                
                 //出力関数を実行
                 addText(day,hour);
             }
@@ -183,6 +205,7 @@
 
         //ローカストレージから取得した値を表示エリアへの出力する関数
             function addText(outDay,outTime) {   
+
             //出力用の要素を作成 →　取得した値（日付、時間）を入れる
             const newDayContent = document.createElement('tr').textContent = outDay;
             const newTimeContent = document.createElement('tr');
@@ -194,12 +217,11 @@
         }
 
         //②チャート作成用の関数
-        let arrayDay = [];
-        let arrayHour = [];
         function getStorageChart(){
-            arrayDay = [];
-            arrayHour = [];
-            
+
+            let arrayDay = [];
+            let arrayHour = [];
+
             get = localStorage.getItem('obj');
             get = JSON.parse(get);
 
@@ -211,7 +233,7 @@
                 arrayDay.push(day);
                 arrayHour.push(hour);
             }
-
+            
             //チャートを設定する関数を実行
             createChart(arrayDay,arrayHour);
         }       
@@ -235,11 +257,8 @@
         //①時間を登録ボタンクリック
         document.getElementById('create').addEventListener('click', function(){
             
-            //入力フォームから値を取得   
-            let inputDay = document.getElementById('input-d').valueAsDate;
-            inputDay = inputDay.toLocaleString('ja-jp',{
-                dateStyle: 'long'
-            }); 
+            //入力フォームから値を取得
+            let inputDay = document.getElementById('input-d').value;
             let inputTime = document.getElementById('input-t').value;           
             
             //取得した値を配列に入れる関数を実行
