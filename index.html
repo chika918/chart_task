@@ -78,11 +78,11 @@
                     <!--入力-->
                     <div class="input-d">
                         <p>日</p>
-                        <input type="date" id="input-d">
+                        <input type="date" id="input-d"/>
                     </div>
                     <div class="input-t">
                         <p>時間</p>
-                        <input type="text" id="input-t">
+                        <input type="text" id="input-t"/>
                     </div>
                 </div>
                 <div class="submit">
@@ -115,17 +115,6 @@
 
             //ローカルストレージから値を取得する関数を実行
             getStorageText();
-            if (get == null) return;
-
-            //表示エリアに出力
-            if (day != null){};
-
-            const newDayContent = document.createElement('tr').textContent = day;
-            document.getElementById('add-d').append(newDayContent);
-
-            const newHourContent = document.createElement('tr').textContent = hour;
-            document.getElementById('add-t').append(newHourContent);
-
         }
 
         //配列をローカルストレージに保存する関数
@@ -166,14 +155,12 @@
                     day: day,
                     hour: hour
                 };
-
                 arrayObj.push(obj);
 
             };
             
             //ローカルストレージに保存する関数を実行
             saveStorage('key',arrayObj);
-
         }
 
         //一覧に日付と時間を出力するための関数
@@ -251,6 +238,7 @@
                 }
             }) 
         }
+
        
         //------イベントハンドル-------//
 
@@ -259,8 +247,22 @@
             
             //入力フォームから値を取得
             let inputDay = document.getElementById('input-d').value;
-            let inputTime = document.getElementById('input-t').value;           
-            
+            let inputTime = document.getElementById('input-t').value;  
+
+                //入力値チェック
+                if (inputDay == "") {
+                    alert("日付は必須です");
+                    return;
+                } 
+
+                if (inputTime == "") {
+                    alert("時間は必須です")
+                    return;
+                } else if(inputTime.match(/[^0-9.]/g)){
+                    alert("時間は半角数字と「.」で入力してください")
+                    return;
+                }
+
             //取得した値を配列に入れる関数を実行
             createArray(inputDay,inputTime);
 
